@@ -10,19 +10,10 @@
       </nav>
     </header>
     <main v-if="selectedMenu === 'Todos'">
-      <!-- Tampilan Todos -->
-      <h2>To-Do List</h2>
-      <input v-model="newTask" @keyup.enter="addTask" placeholder="Add a new task">
-      <ul>
-        <li v-for="(task, index) in filteredTasks" :key="index" :class="{ 'completed': task.completed }">
-          <span @click="toggleTask(index)">{{ task.description }}</span>
-          <button @click="deleteTask(index)">Delete</button>
-        </li>
-      </ul>
-      <div class="filter">
-        <label>Show only incomplete tasks:</label>
-        <input type="checkbox" v-model="showOnlyIncomplete">
-      </div>
+      <Todos :tasks="tasks">
+        <!-- Additional content for Todos component -->
+        <p>Total tasks: {{ tasks.length }}</p>
+      </Todos>
     </main>
     <main v-else-if="selectedMenu === 'Post'">
       <!-- Tampilan Postingan -->
@@ -46,7 +37,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import Todos from './components/todos.vue';
 
 interface Task {
   description: string;
@@ -54,38 +46,13 @@ interface Task {
 }
 
 const selectedMenu = ref('Todos');
+const selectedUser = ref<number | null>(null);
+const users = ref<any[]>([]);
+const posts = ref<any[]>([]);
 const tasks = ref<Task[]>([
   { description: 'Example task 1', completed: false },
   { description: 'Example task 2', completed: true },
 ]);
-const newTask = ref('');
-const showOnlyIncomplete = ref(false);
-const selectedUser = ref<number|null>(null);
-const users = ref<any[]>([]);
-const posts = ref<any[]>([]);
-
-const addTask = () => {
-  if (newTask.value.trim() !== '') {
-    tasks.value.push({ description: newTask.value, completed: false });
-    newTask.value = '';
-  }
-};
-
-const deleteTask = (index: number) => {
-  tasks.value.splice(index, 1);
-};
-
-const toggleTask = (index: number) => {
-  tasks.value[index].completed = !tasks.value[index].completed;
-};
-
-const filteredTasks = computed(() => {
-  if (showOnlyIncomplete.value) {
-    return tasks.value.filter(task => !task.completed);
-  } else {
-    return tasks.value;
-  }
-});
 
 // Ambil data pengguna saat komponen dimuat
 onMounted(async () => {
@@ -103,10 +70,15 @@ watch(selectedUser, async (newValue) => {
 </script>
 
 <style scoped>
-.completed {
-  text-decoration: line-through;
+nav ul {
+  list-style-type: none;
+  padding: 0;
 }
-.filter {
-  margin-top: 10px;
+
+nav li {
+  display: inline;
+  margin-right: 10px;
+  cursor: pointer;
+  text-decoration: underline;
 }
 </style>
